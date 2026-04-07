@@ -16,7 +16,7 @@ if not os.path.exists(UPLOAD_DIR):
 connected_clients = set()
 ws_loop = None
 
-class MinecraftHandler(http.server.SimpleHTTPRequestHandler):
+class ATPHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
             self.path = 'index.html'
@@ -74,37 +74,38 @@ async def start_ws(ip, port):
     async with websockets.serve(ws_logic, ip, port + 1):
         await asyncio.Future()
 
-class MCRoot:
+class ATPRoot:
     def __init__(self, root):
         self.root = root
-        self.root.title("MINECRAFT SERVER PANEL")
-        self.root.geometry("400x500")
-        self.root.configure(bg="#484848") # Stone Gray
+        self.root.title("ATP CRAFT SUNUCU PANELI")
+        self.root.geometry("400x520")
+        self.root.configure(bg="#313131") # Koyu Tas Rengi
 
-        # Baslik
-        tk.Label(root, text="AERO CRAFT", font=("Courier", 30, "bold"), bg="#484848", fg="#55FF55").pack(pady=20)
+        # Logo/Baslik
+        tk.Label(root, text="ATP CRAFT", font=("Courier", 34, "bold"), bg="#313131", fg="#FFFF55").pack(pady=20)
         
-        # Panel
-        panel = tk.Frame(root, bg="#8B4513", padx=20, pady=20, highlightbackground="#000", highlightthickness=3)
+        # Kontrol Paneli
+        panel = tk.Frame(root, bg="#4A321F", padx=20, pady=20, highlightbackground="#000", highlightthickness=4)
         panel.pack(padx=30, fill="x")
 
-        style = {"bg": "#8B4513", "fg": "#FFFFFF", "font": ("Courier", 10, "bold")}
+        lbl_style = {"bg": "#4A321F", "fg": "#E0E0E0", "font": ("Courier", 10, "bold")}
         
-        tk.Label(panel, text="BAGLANTI ADRESI (IP)", **style).pack(anchor="w")
-        self.ip_in = tk.Entry(panel, bg="#333", fg="#55FFFF", insertbackground="white", relief="flat", font=("Consolas", 12))
+        tk.Label(panel, text="SUNUCU IP ADRESI", **lbl_style).pack(anchor="w")
+        self.ip_in = tk.Entry(panel, bg="#1E1E1E", fg="#55FF55", insertbackground="white", relief="flat", font=("Consolas", 12))
         self.ip_in.insert(0, "0.0.0.0")
         self.ip_in.pack(pady=(5, 15), fill="x")
 
-        tk.Label(panel, text="PORT", **style).pack(anchor="w")
-        self.port_in = tk.Entry(panel, bg="#333", fg="#55FFFF", insertbackground="white", relief="flat", font=("Consolas", 12))
+        tk.Label(panel, text="PORT (VARSAYILAN 80)", **lbl_style).pack(anchor="w")
+        self.port_in = tk.Entry(panel, bg="#1E1E1E", fg="#55FF55", insertbackground="white", relief="flat", font=("Consolas", 12))
         self.port_in.insert(0, "80")
         self.port_in.pack(pady=(5, 15), fill="x")
 
-        self.btn = tk.Button(root, text="DUNYAYI OLUSTUR", command=self.start, bg="#55FF55", fg="#000", 
-                             font=("Courier", 14, "bold"), relief="raised", bd=5, cursor="hand2")
+        # Baslat Butonu
+        self.btn = tk.Button(root, text="DUNYAYI YUKLE", command=self.start, bg="#3FB33F", fg="#FFF", 
+                             font=("Courier", 14, "bold"), relief="raised", bd=6, cursor="hand2", activebackground="#2D802D")
         self.btn.pack(pady=30, fill="x", padx=60, ipady=10)
 
-        self.status = tk.Label(root, text="DURUM: KAPALI", bg="#484848", fg="#FF5555", font=("Courier", 10, "bold"))
+        self.status = tk.Label(root, text="DURUM: BEKLENIYOR...", bg="#313131", fg="#AAAAAA", font=("Courier", 10))
         self.status.pack()
 
     def start(self):
@@ -113,16 +114,16 @@ class MCRoot:
         
         def run_http():
             try:
-                server = http.server.HTTPServer((ip, port), MinecraftHandler)
+                server = http.server.HTTPServer((ip, port), ATPHandler)
                 self.root.after(0, lambda: self.status.config(text=f"AKTIF: {ip}:{port}", fg="#55FF55"))
                 server.serve_forever()
             except Exception as e:
                 self.root.after(0, lambda: messagebox.showerror("HATA", str(e)))
 
         threading.Thread(target=run_http, daemon=True).start()
-        self.btn.config(state="disabled", text="CALISIYOR...", bg="#7D7D7D")
+        self.btn.config(state="disabled", text="SUNUCU ACIK", bg="#555555")
 
 if __name__ == "__main__":
     root = tk.Tk()
-    MCRoot(root)
+    ATPRoot(root)
     root.mainloop()
