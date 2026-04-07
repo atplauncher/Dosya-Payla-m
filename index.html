@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Minecraft Cloud Share</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body { 
+            background: #1a1a1a url('https://www.transparenttextures.com/patterns/dark-matter.png'); 
+            color: #AAAAAA; 
+            font-family: 'VT323', monospace; 
+            margin: 0; padding: 40px; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .container { width: 100%; max-width: 600px; }
+
+        /* Minecraft Button Style */
+        .mc-card {
+            background: #8B8B8B;
+            border: 4px solid #000;
+            border-top-color: #DBDBDB;
+            border-left-color: #DBDBDB;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 5px 5px 0px #000;
+        }
+
+        h1 { color: #55FF55; text-shadow: 3px 3px 0px #000; font-size: 3rem; margin: 0 0 20px 0; text-align: center; }
+        
+        /* Drag Area */
+        .drop-zone {
+            border: 4px dashed #555;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: rgba(0,0,0,0.3);
+        }
+        .drop-zone:hover { border-color: #55FF55; background: rgba(85, 255, 85, 0.1); }
+        .drop-zone h2 { color: #55FFFF; margin: 0; font-size: 2rem; }
+
+        /* XP Bar (Progress Bar) */
+        #progress-container { display: none; margin: 20px 0; text-align: center; }
+        .xp-bar-bg { background: #333; height: 12px; border: 2px solid #000; position: relative; }
+        .xp-bar-fill { background: #55FF55; width: 0%; height: 100%; box-shadow: 0 0 10px #55FF55; }
+        #xp-text { color: #55FF55; font-size: 1.2rem; }
+
+        /* Inventory List */
+        .inventory { background: #484848; border: 4px solid #000; padding: 15px; }
+        .inv-title { color: #FFFF55; font-size: 1.5rem; border-bottom: 2px solid #000; margin-bottom: 10px; }
+        
+        .slot {
+            background: #8B8B8B;
+            border: 3px solid #000;
+            border-top-color: #373737;
+            border-left-color: #373737;
+            margin-bottom: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .slot a { color: #fff; text-decoration: none; font-size: 1.2rem; }
+        .slot a:hover { color: #55FFFF; }
+        
+        .delete-btn {
+            background: #AA0000;
+            color: #fff;
+            padding: 5px 10px;
+            cursor: pointer;
+            border: 2px solid #000;
+        }
+        .delete-btn:hover { background: #FF5555; }
+
+        .footer { margin-top: 20px; color: #555; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>AERO CRAFT STORAGE</h1>
+
+    <div class="mc-card">
+        <div class="drop-zone" id="drop-zone">
+            <h2>ESYALARI BURAYA AT</h2>
+            <p>(VEYA TIKLA VE SEC)</p>
+            <input type="file" id="file-input" style="display:none">
+        </div>
+    </div>
+
+    <div id="progress-container">
+        <div id="xp-text">TECRUBE KAZANILIYOR: 0%</div>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" id="bar"></div></div>
+    </div>
+
+    <div class="inventory">
+        <div class="inv-title">ENVANTER (YUKLENENLER)</div>
+        <div id="file-list">
+            </div>
+    </div>
+
+    <div class="footer">BAGLANTI DURUMU: <span id="ws-status" style="color:#55FF55">GUVENLI</span></div>
+</div>
+
+<script>
+    const zone = document.getElementById('drop-zone');
+    const input = document.getElementById('file-input');
+    const list = document.getElementById('file-list');
+
+    // Dosyalari Getir
+    const refreshInventory = async () => {
+        const res = await fetch('/api/files');
+        const files = await res.json();
+        list.innerHTML = files.length ? '' : '<p style="text-align:center">ENVANTER BOS</p>';
+        files.forEach(f => {
+            list.innerHTML += `
+                <div class="slot">
+                    <a href="/yuklenenler/${f}" download>${f}</a>
+                    <div class="delete-btn" onclick="dropItem('${f}')">SIL</div>
+                </div>`;
+        });
+    };
+
+    const dropItem = async (name) => {
+        if(confirm(name + ' esyasini yok etmek istiyor musun?')) {
+            await fetch('/api/delete/' + encodeURIComponent(name));
+            refreshInventory();
+        }
+    };
+
+    // Yukleme Islemi
+    zone.onclick = () => input.click();
+    zone.ondragover = (e) => { e.preventDefault(); zone.style.borderColor = '#55FF55'; };
+    zone.ondragleave = () => zone.style.borderColor = '#555';
+    zone.ondrop = (e) => {
+        e.preventDefault();
+        zone.style.borderColor = '#555';
+        if(e.dataTransfer.files.length) upload(e.dataTransfer.files[0]);
+    };
+    input.onchange = () => { if(input.files.length) upload(input.files[0]); };
+
+    function upload(file) {
+        const xhr = new XMLHttpRequest();
+        const fd = new FormData();
+        fd.append('file', file);
+        
+        document.getElementById('progress-container').style.display = 'block';
+
+        xhr.upload.onprogress = (e) => {
+            const p = Math.round((e.loaded / e.total) * 100);
+            document.getElementById('bar').style.width = p + '%';
+            document.getElementById('xp-text').innerText = 'TECRUBE KAZANILIYOR: ' + p + '%';
+        };
+        
+        xhr.onload = () => {
+            setTimeout(() => { document.getElementById('progress-container').style.display = 'none'; }, 1000);
+            refreshInventory();
+        };
+        xhr.open('POST', '/', true);
+        xhr.send(fd);
+    }
+
+    // Real-time (WebSocket)
+    const port = parseInt(window.location.port || 80);
+    const ws = new WebSocket(`ws://${window.location.hostname}:${port + 1}`);
+    ws.onmessage = (e) => { if(e.data === 'update') refreshInventory(); };
+    ws.onclose = () => {
+        document.getElementById('ws-status').innerText = 'BAGLANTI KOPARILDI';
+        document.getElementById('ws-status').style.color = '#FF5555';
+    };
+
+    refreshInventory();
+</script>
+
+</body>
+</html>
