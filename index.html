@@ -2,106 +2,119 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Minecraft Cloud Share</title>
+    <title>ATP Craft | Depolama</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
         body { 
-            background: #1a1a1a url('https://www.transparenttextures.com/patterns/dark-matter.png'); 
-            color: #AAAAAA; 
+            background: #1a1a1a url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); 
+            color: #E0E0E0; 
             font-family: 'VT323', monospace; 
-            margin: 0; padding: 40px; 
+            margin: 0; padding: 20px; 
             display: flex; flex-direction: column; align-items: center;
         }
 
-        .container { width: 100%; max-width: 600px; }
+        .container { width: 100%; max-width: 650px; }
 
-        /* Minecraft Button Style */
-        .mc-card {
+        /* Minecraft Card Style */
+        .atp-card {
+            background: #4e4e4e;
+            border: 5px solid #000;
+            border-top-color: #9d9d9d;
+            border-left-color: #9d9d9d;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.5);
+        }
+
+        h1 { color: #FFFF55; text-shadow: 4px 4px 0px #000; font-size: 4rem; margin: 0 0 10px 0; text-align: center; letter-spacing: 2px; }
+        .subtitle { color: #55FF55; text-align: center; font-size: 1.5rem; margin-bottom: 30px; text-shadow: 2px 2px 0px #000; }
+        
+        /* Drag Area */
+        .drop-zone {
+            border: 4px dashed #222;
+            padding: 50px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(0,0,0,0.4);
+            image-rendering: pixelated;
+        }
+        .drop-zone:hover { border-color: #55FF55; background: rgba(85, 255, 85, 0.05); }
+        .drop-zone h2 { color: #55FFFF; margin: 0; font-size: 2.2rem; }
+
+        /* XP Bar (Progress Bar) */
+        #progress-container { display: none; margin: 20px 0; }
+        .xp-label { color: #55FF55; font-size: 1.4rem; text-align: center; margin-bottom: 5px; }
+        .xp-bar-bg { background: #000; height: 16px; border: 3px solid #555; position: relative; }
+        .xp-bar-fill { background: #55FF55; width: 0%; height: 100%; box-shadow: 0 0 15px #55FF55; transition: width 0.1s; }
+
+        /* Inventory List */
+        .inventory { background: #373737; border: 5px solid #000; padding: 20px; }
+        .inv-header { 
+            color: #FFAA00; font-size: 1.8rem; border-bottom: 4px solid #222; 
+            padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between;
+        }
+        
+        #file-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        
+        .slot {
             background: #8B8B8B;
             border: 4px solid #000;
             border-top-color: #DBDBDB;
             border-left-color: #DBDBDB;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 5px 5px 0px #000;
-        }
-
-        h1 { color: #55FF55; text-shadow: 3px 3px 0px #000; font-size: 3rem; margin: 0 0 20px 0; text-align: center; }
-        
-        /* Drag Area */
-        .drop-zone {
-            border: 4px dashed #555;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-            background: rgba(0,0,0,0.3);
-        }
-        .drop-zone:hover { border-color: #55FF55; background: rgba(85, 255, 85, 0.1); }
-        .drop-zone h2 { color: #55FFFF; margin: 0; font-size: 2rem; }
-
-        /* XP Bar (Progress Bar) */
-        #progress-container { display: none; margin: 20px 0; text-align: center; }
-        .xp-bar-bg { background: #333; height: 12px; border: 2px solid #000; position: relative; }
-        .xp-bar-fill { background: #55FF55; width: 0%; height: 100%; box-shadow: 0 0 10px #55FF55; }
-        #xp-text { color: #55FF55; font-size: 1.2rem; }
-
-        /* Inventory List */
-        .inventory { background: #484848; border: 4px solid #000; padding: 15px; }
-        .inv-title { color: #FFFF55; font-size: 1.5rem; border-bottom: 2px solid #000; margin-bottom: 10px; }
-        
-        .slot {
-            background: #8B8B8B;
-            border: 3px solid #000;
-            border-top-color: #373737;
-            border-left-color: #373737;
-            margin-bottom: 8px;
-            padding: 12px;
+            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: 0.2s;
         }
-        .slot a { color: #fff; text-decoration: none; font-size: 1.2rem; }
-        .slot a:hover { color: #55FFFF; }
+        .slot:hover { transform: scale(1.02); background: #9c9c9c; }
+        .slot a { color: #000; text-decoration: none; font-size: 1.4rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%; }
         
         .delete-btn {
             background: #AA0000;
             color: #fff;
-            padding: 5px 10px;
+            padding: 5px 15px;
             cursor: pointer;
-            border: 2px solid #000;
+            border: 3px solid #000;
+            font-size: 1.1rem;
         }
         .delete-btn:hover { background: #FF5555; }
 
-        .footer { margin-top: 20px; color: #555; font-size: 1rem; }
+        .status-footer { margin-top: 30px; text-align: center; color: #555; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>AERO CRAFT STORAGE</h1>
+    <h1>ATP CRAFT</h1>
+    <div class="subtitle">Enerji Dolu Bulut Depolama</div>
 
-    <div class="mc-card">
+    <div class="atp-card">
         <div class="drop-zone" id="drop-zone">
-            <h2>ESYALARI BURAYA AT</h2>
-            <p>(VEYA TIKLA VE SEC)</p>
+            <h2>ESYALARI AT</h2>
+            <p style="color:#888; font-size: 1.2rem;">(VEYA BURAYA TIKLA)</p>
             <input type="file" id="file-input" style="display:none">
         </div>
     </div>
 
     <div id="progress-container">
-        <div id="xp-text">TECRUBE KAZANILIYOR: 0%</div>
+        <div class="xp-label" id="xp-text">ENERJI TOPLANIYOR: 0%</div>
         <div class="xp-bar-bg"><div class="xp-bar-fill" id="bar"></div></div>
     </div>
 
     <div class="inventory">
-        <div class="inv-title">ENVANTER (YUKLENENLER)</div>
+        <div class="inv-header">
+            <span>SANDIK ICERIGI</span>
+            <span style="font-size: 1rem; color: #555;">[ENVANTER]</span>
+        </div>
         <div id="file-list">
             </div>
     </div>
 
-    <div class="footer">BAGLANTI DURUMU: <span id="ws-status" style="color:#55FF55">GUVENLI</span></div>
+    <div class="status-footer">
+        SUNUCU DURUMU: <span id="ws-status" style="color:#55FF55">AKTIF</span>
+    </div>
 </div>
 
 <script>
@@ -109,39 +122,39 @@
     const input = document.getElementById('file-input');
     const list = document.getElementById('file-list');
 
-    // Dosyalari Getir
-    const refreshInventory = async () => {
+    // Dosyalari Getir (API)
+    const loadInventory = async () => {
         const res = await fetch('/api/files');
         const files = await res.json();
-        list.innerHTML = files.length ? '' : '<p style="text-align:center">ENVANTER BOS</p>';
+        list.innerHTML = files.length ? '' : '<p style="text-align:center; color:#666;">SANDIKTA HIC ESYA YOK</p>';
         files.forEach(f => {
             list.innerHTML += `
                 <div class="slot">
                     <a href="/yuklenenler/${f}" download>${f}</a>
-                    <div class="delete-btn" onclick="dropItem('${f}')">SIL</div>
+                    <div class="delete-btn" onclick="destroyItem('${f}')">YOK ET</div>
                 </div>`;
         });
     };
 
-    const dropItem = async (name) => {
-        if(confirm(name + ' esyasini yok etmek istiyor musun?')) {
+    const destroyItem = async (name) => {
+        if(confirm(name + ' esyasini lavda yakmak istiyor musun?')) {
             await fetch('/api/delete/' + encodeURIComponent(name));
-            refreshInventory();
+            loadInventory();
         }
     };
 
-    // Yukleme Islemi
+    // Dosya Yukleme (AJAX)
     zone.onclick = () => input.click();
     zone.ondragover = (e) => { e.preventDefault(); zone.style.borderColor = '#55FF55'; };
-    zone.ondragleave = () => zone.style.borderColor = '#555';
+    zone.ondragleave = () => zone.style.borderColor = '#222';
     zone.ondrop = (e) => {
         e.preventDefault();
-        zone.style.borderColor = '#555';
-        if(e.dataTransfer.files.length) upload(e.dataTransfer.files[0]);
+        zone.style.borderColor = '#222';
+        if(e.dataTransfer.files.length) startUpload(e.dataTransfer.files[0]);
     };
-    input.onchange = () => { if(input.files.length) upload(input.files[0]); };
+    input.onchange = () => { if(input.files.length) startUpload(input.files[0]); };
 
-    function upload(file) {
+    function startUpload(file) {
         const xhr = new XMLHttpRequest();
         const fd = new FormData();
         fd.append('file', file);
@@ -151,27 +164,30 @@
         xhr.upload.onprogress = (e) => {
             const p = Math.round((e.loaded / e.total) * 100);
             document.getElementById('bar').style.width = p + '%';
-            document.getElementById('xp-text').innerText = 'TECRUBE KAZANILIYOR: ' + p + '%';
+            document.getElementById('xp-text').innerText = 'ENERJI TOPLANIYOR: ' + p + '%';
         };
         
         xhr.onload = () => {
-            setTimeout(() => { document.getElementById('progress-container').style.display = 'none'; }, 1000);
-            refreshInventory();
+            setTimeout(() => { 
+                document.getElementById('progress-container').style.display = 'none'; 
+                document.getElementById('bar').style.width = '0%';
+            }, 1500);
+            loadInventory();
         };
         xhr.open('POST', '/', true);
         xhr.send(fd);
     }
 
-    // Real-time (WebSocket)
+    // Gercek Zamanli Guncelleme (WS)
     const port = parseInt(window.location.port || 80);
     const ws = new WebSocket(`ws://${window.location.hostname}:${port + 1}`);
-    ws.onmessage = (e) => { if(e.data === 'update') refreshInventory(); };
+    ws.onmessage = (e) => { if(e.data === 'update') loadInventory(); };
     ws.onclose = () => {
-        document.getElementById('ws-status').innerText = 'BAGLANTI KOPARILDI';
+        document.getElementById('ws-status').innerText = 'BAGLANTI KESILDI';
         document.getElementById('ws-status').style.color = '#FF5555';
     };
 
-    refreshInventory();
+    loadInventory(); // Baslangicta envanteri doldur
 </script>
 
 </body>
